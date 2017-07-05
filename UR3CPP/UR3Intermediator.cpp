@@ -5,6 +5,17 @@
 #include <QHostAddress>
 #include <QDebug>
 #include "UR3Message.h"
+
+ void UR3Intermediator::TEST()
+{
+    QString cmd1 = "movej([-0.1, -1.26, 1.71, -1.02, -0.56, 0.19], a=1.0, v=0.1)\n";
+    QString cmd2 = "movej([-0.2, -1.96, 1.21, -1.62, -1.86, 1.79], a=1.0, v=0.1)\n";
+    QString cmd3 = "movej([-0.7, -1.06, 1.11, -1.62, -1.26, 1.19], a=1.0, v=0.1)\n";
+    emit newCommand(cmd1);
+    emit newCommand(cmd2);
+    emit newCommand(cmd3);
+}
+
 char *strdup (const char *s)
 {
     char* d = (char*)malloc(strlen (s) + 1);   // Space for length plus nul
@@ -63,6 +74,7 @@ void UR3Intermediator::MoveJ(QVector<double> JointPosition, double JointAccelera
             "a=" + QString::number(JointAcceleration)+ ", " +
             "v=" + QString::number(JointSpeed)+ ")\n";
 
+    _running = true;
     emit newCommand(command);
 
 
@@ -156,7 +168,7 @@ UR3Intermediator::UR3Intermediator(QString ipAddress, int port):_connected(false
     connect(this->_socket,SIGNAL(disconnected()),this,SLOT(disconnected()));
     connect(this,SIGNAL(newCommand(QString)),this,SLOT(OnNewCommand(QString)));
 
-    _timer->start(500);
+    _timer->start(100);
 }
 
 int UR3Intermediator::getPort() const
@@ -230,9 +242,11 @@ void UR3Intermediator::GetRobotData()
     }
 
 }
-void UR3Intermediator::CheckIfRunning()
+bool UR3Intermediator::CheckIfRunning()
 {
     _running =ActualRobotInfo.robotModeData.getIsProgramRunning();
+    return _running;
+
 }
 
 
@@ -281,15 +295,17 @@ void UR3Intermediator::GetRobotMessage(char *data, unsigned int &offset, int siz
         unsigned char packageType;
         memcpy(&packageType, &data[offset], sizeof(packageType));
         offset+=sizeof(packageType);
-        CheckIfRunning();
         switch(packageType){
         case ROBOT_MODE_DATA:
             this->ActualRobotInfo.setRobotModeData(_data, offset);
-            if(ActualRobotInfo.robotModeData.getIsEmergencyStopped() || ActualRobotInfo.robotModeData.getIsProtectiveStopped())
+            /*if(ActualRobotInfo.robotModeData.getIsEmergencyStopped() || ActualRobotInfo.robotModeData.getIsProtectiveStopped())
             {
                 _socket->write(QString("end_force_mode()\n").toLatin1().data());
                 _socket->waitForBytesWritten();
             }
+            */
+
+            CheckIfRunning();
             break;
         case JOINT_DATA:
             this->ActualRobotInfo.setJointsData(_data, offset);
@@ -318,7 +334,9 @@ void UR3Intermediator::GetRobotMessage(char *data, unsigned int &offset, int siz
         case SAFETY_DATA:
             break;
         }
+
         offset +=sizeOfPackage - 5; //-5 poniewaz wczesniej przesunalem o sizeofpackage i packagetype
+
     }
 
 }
@@ -339,13 +357,15 @@ void UR3Intermediator::ReadDataFlow()
 
 void UR3Intermediator::onTimerEvent()
 {
-    CheckIfRunning();
+
     if(!_running && _commandsQueue.length() > 0)
     {
         QString cmd = _commandsQueue.dequeue();
+        _running = true;
         _socket->write(cmd.toLatin1().data());
         _socket->waitForBytesWritten();
     }
+
 }
 
 bool UR3Intermediator::ConnectToRobot()

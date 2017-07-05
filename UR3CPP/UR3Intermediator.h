@@ -84,7 +84,8 @@ public:
     QString getIpAddress() const;
     void setIpAddress(const QString &value);
 
-    void CheckIfRunning();
+    bool CheckIfRunning();
+    void TEST();
 signals:
 
     void newCommand(QString cmd);

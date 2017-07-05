@@ -65,11 +65,8 @@ void MainWindow::OnMoveL()
 
 void MainWindow::OnSamuraiCut()
 {
-    for (int var = 0; var < 5; ++var)
-    {
-        this->ur3->SamuraiCut();
-    }
 
+    ur3->TEST();
 }
 
 void MainWindow::OnActionConnection()

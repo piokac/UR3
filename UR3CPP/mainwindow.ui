@@ -195,7 +195,7 @@
     <item row="8" column="3">
      <widget class="QPushButton" name="pushButton_Samurai">
       <property name="text">
-       <string>Samurai Cut</string>
+       <string>TEST</string>
       </property>
      </widget>
     </item>
