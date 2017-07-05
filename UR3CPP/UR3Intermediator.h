@@ -10,6 +10,8 @@
 #include <QObject>
 #include <QTcpSocket>
 #include <QMutex>
+#include <QQueue>
+#include <QTimer>
 
 using namespace std;
 
@@ -82,19 +84,20 @@ public:
     QString getIpAddress() const;
     void setIpAddress(const QString &value);
 
+    void CheckIfRunning();
 signals:
-    //umieszczone w jednym sygnale, dwa sygnaly z argumentami qvector crashuja aplikacje, najprawdopdobniej blad mingw 4.9.2
+
+    void newCommand(QString cmd);
     void newPoseTCP(QVector<double> x, char flag);  /*!< Sygnal przekazujacy TCP albo pose jointwo, w zaleznosci od flagi, 'p' - pose, 't' - tcp  */
     void ConnectionAction(char* Ip,bool Result);
+
 private:
 
     //Fields
 
+
     bool _running;
-    QVector<double> _moveJTargetPos;
-    QVector<double> _moveLTargetPose;
-    QVector<double> _lastJointPos;
-    QVector<double> _lastPolozenie;
+    QQueue<QString> _commandsQueue;
 
     Q_PROPERTY(int Port READ getPort WRITE setPort USER true)
     int Port;
@@ -103,14 +106,15 @@ private:
     QString IpAddress;
 
     UR3Message ActualRobotInfo;
+
     char * _data;
     QByteArray _DataFlow;
     QTcpSocket* _socket;
+    QTimer* _timer;
     bool _connected;
 
     //Methods
-    void CheckIfStillMovejRunning();
-    void CheckIfStillMoveLRunning();
+
     void CheckJointsPosChanged();
     void CheckPolozenieChanged();
     void GetRobotData();
@@ -118,13 +122,17 @@ private:
     void ReadDataFlow();
 
 private slots:
+
+    void onTimerEvent();
     void disconnected();
 
 
 public slots:
 
+    void OnNewCommand(QString cmd);
     void OnTcpChanged();
     void OnSocketNewBytesWritten();
+
 private:
     QMutex mutex;
 };
