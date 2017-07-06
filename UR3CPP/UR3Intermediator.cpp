@@ -74,7 +74,7 @@ void UR3Intermediator::MoveJ(QVector<double> JointPosition, double JointAccelera
             "a=" + QString::number(JointAcceleration)+ ", " +
             "v=" + QString::number(JointSpeed)+ ")\n";
 
-    _running = true;
+    //_running = true;
     emit newCommand(command);
 
 
@@ -239,13 +239,14 @@ void UR3Intermediator::GetRobotData()
         }
         _DataFlow = _DataFlow.mid(size);
         mutex.unlock();
+        TEST();
     }
 
 }
 bool UR3Intermediator::CheckIfRunning()
 {
-    _running =ActualRobotInfo.robotModeData.getIsProgramRunning();
-    return _running;
+    bool running =ActualRobotInfo.robotModeData.getIsProgramRunning();
+    return running;
 
 }
 
@@ -305,7 +306,7 @@ void UR3Intermediator::GetRobotMessage(char *data, unsigned int &offset, int siz
             }
             */
 
-            CheckIfRunning();
+            //CheckIfRunning();
             break;
         case JOINT_DATA:
             this->ActualRobotInfo.setJointsData(_data, offset);
@@ -358,12 +359,17 @@ void UR3Intermediator::ReadDataFlow()
 void UR3Intermediator::onTimerEvent()
 {
 
-    if(!_running && _commandsQueue.length() > 0)
+    if(!CheckIfRunning() && _commandsQueue.length() > 0)
     {
         QString cmd = _commandsQueue.dequeue();
-        _running = true;
+        //_running = true;
         _socket->write(cmd.toLatin1().data());
         _socket->waitForBytesWritten();
+
+        for(int i = 0; i<6; i++){
+            qDebug()<<this->ActualRobotInfo.jointsData[i].getActualJointPosition();
+        }
+        qDebug()<<endl;
     }
 
 }
