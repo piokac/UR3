@@ -66,7 +66,7 @@ void MainWindow::OnMoveL()
 void MainWindow::OnSamuraiCut()
 {
 
-    ur3->TEST();
+    ur3->TEST_POINTLIST();
 }
 
 void MainWindow::OnActionConnection()

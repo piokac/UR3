@@ -85,7 +85,8 @@ public:
     void setIpAddress(const QString &value);
 
     bool CheckIfRunning();
-    void TEST();
+    void TEST_QUEUE();
+    void TEST_POINTLIST();
 signals:
 
     void newCommand(QString cmd);
@@ -96,7 +97,7 @@ private:
 
     //Fields
 
-
+    
     bool _running;
     QQueue<QString> _commandsQueue;
 
@@ -130,6 +131,7 @@ private slots:
 
 public slots:
 
+    void OnPositionVector(QVector<QVector<double>> listOfPosition);
     void OnNewCommand(QString cmd);
     void OnTcpChanged();
     void OnSocketNewBytesWritten();

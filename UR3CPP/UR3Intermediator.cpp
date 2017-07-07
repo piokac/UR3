@@ -6,7 +6,7 @@
 #include <QDebug>
 #include "UR3Message.h"
 
- void UR3Intermediator::TEST()
+ void UR3Intermediator::TEST_QUEUE()
 {
     QString cmd1 = "movej([-0.1, -1.26, 1.71, -1.02, -0.56, 0.19], a=1.0, v=0.1)\n";
     QString cmd2 = "movej([-0.2, -1.96, 1.21, -1.62, -1.86, 1.79], a=1.0, v=0.1)\n";
@@ -14,7 +14,21 @@
     emit newCommand(cmd1);
     emit newCommand(cmd2);
     emit newCommand(cmd3);
-}
+ }
+
+ void UR3Intermediator::TEST_POINTLIST()
+ {
+     auto t1 = QVector<double>({.0,-1.5708,.0,-1.5708,.0,.0});
+     auto t2 = QVector<double>({1.0,-1.0,1.0,-1.5708,1.0,1.0});
+     auto t3 = QVector<double>({.0,-1.5708,.0,-1.5708,.0,.0});
+
+     QVector<QVector<double>> testList;
+     testList.append(t1);
+     testList.append(t2);
+     testList.append(t3);
+
+     this->OnPositionVector(testList);
+ }
 
 char *strdup (const char *s)
 {
@@ -400,6 +414,20 @@ void UR3Intermediator::disconnected()
     _socket->deleteLater();
     _socket = new QTcpSocket();
     ConnectToRobot();
+}
+
+void UR3Intermediator::OnPositionVector(QVector<QVector<double>> listOfPosition )
+{
+    for (auto ptr = listOfPosition.begin() ; ptr != listOfPosition.end(); ++ptr)
+    {
+        if(ptr->size() != 6 )
+        {
+            return;
+        }
+
+        this->MoveJ(*ptr);
+    }
+
 }
 
 void UR3Intermediator::OnNewCommand(QString cmd)
