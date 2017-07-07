@@ -239,14 +239,13 @@ void UR3Intermediator::GetRobotData()
         }
         _DataFlow = _DataFlow.mid(size);
         mutex.unlock();
-        TEST();
+        //TEST();
     }
 
 }
 bool UR3Intermediator::CheckIfRunning()
 {
-    bool running =ActualRobotInfo.robotModeData.getIsProgramRunning();
-    return running;
+    return ActualRobotInfo.robotModeData.getIsProgramRunning();
 
 }
 
